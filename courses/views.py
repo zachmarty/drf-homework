@@ -12,7 +12,7 @@ from courses.serializers import CourseSerializer, LessonSerializer
 
 
 class CourseViewSet(ModelViewSet):
-    serializer_class = LessonSerializer
+    serializer_class = CourseSerializer
     queryset = Course.objects.all()
 
 
@@ -23,19 +23,19 @@ class LessonDetailView(RetrieveAPIView):
 
 class LessonListView(ListAPIView):
     serializer_class = LessonSerializer
-    queryset = Course.objects.all()
+    queryset = Lesson.objects.all()
 
 
 class LessonCreateView(CreateAPIView):
     serializer_class = LessonSerializer
-    queryset = Course.objects.all()
+    queryset = Lesson.objects.all()
 
 
 class LessonUpdateView(UpdateAPIView):
     serializer_class = LessonSerializer
-    queryset = Course.objects.all()
+    queryset = Lesson.objects.all()
 
 
 class LessonDeleteView(DestroyAPIView):
     serializer_class = LessonSerializer
-    queryset = Course.objects.all()
+    queryset = Lesson.objects.all()
