@@ -18,6 +18,7 @@ pylance = "^0.10.13"
 flake8 = "^7.0.0"
 pillow = "^10.3.0"
 python-dotenv = "^1.0.1"
+django-filter = "^24.2"
 
 
 [build-system]
