@@ -9,6 +9,13 @@ class Course(models.Model):
     description = models.TextField(
         max_length=500, blank=True, null=True, verbose_name="Описание"
     )
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        verbose_name="Пользователь",
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
         verbose_name = "Курс"
@@ -27,8 +34,15 @@ class Lesson(models.Model):
         max_length=500, verbose_name="Описание", blank=True, null=True
     )
     preview = models.ImageField(verbose_name="Картинка", blank=True, null=True)
-    video = models.URLField(verbose_name="Видео", blank = True, null=True)
+    video = models.URLField(verbose_name="Видео", blank=True, null=True)
     course = models.ForeignKey(Course, on_delete=models.CASCADE, verbose_name="Курс")
+    user = models.ForeignKey(
+        User,
+        null=True,
+        blank=True,
+        verbose_name="Пользователь",
+        on_delete=models.CASCADE,
+    )
 
     class Meta:
         verbose_name = "Урок"

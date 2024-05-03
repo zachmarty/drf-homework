@@ -46,6 +46,7 @@ INSTALLED_APPS = [
     "users",
     "courses",
     "django_filters",
+    "rest_framework_simplejwt",
 ]
 
 MIDDLEWARE = [
@@ -135,3 +136,12 @@ DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
 
 
 AUTH_USER_MODEL = "users.User"
+
+REST_FRAMEWORK = {
+    "DEFAULT_AUTHENTIFICATION_CLASSES": (
+        "rest_framework_simplejwt.authentification.JWTAuthentification",
+    ),
+    "DEFAULT_PERMISSION_CLASSES": [
+        "rest_framework.permissions.AllowAny",
+    ],
+}
