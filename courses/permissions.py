@@ -8,3 +8,9 @@ class IsUserOrStaff(BasePermission):
             return True
         
         return request.user == view.get_object().user
+    
+    
+class IsModer(BasePermission):
+    
+    def has_permission(self, request, view):
+        return request.user.groups.filter(name = 'moder').exists()

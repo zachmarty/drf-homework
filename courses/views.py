@@ -11,7 +11,7 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.viewsets import ModelViewSet
 
 from courses.models import Course, Lesson, Payment
-from courses.permissions import IsUserOrStaff
+from courses.permissions import IsModer, IsUserOrStaff
 from courses.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
 
 
@@ -28,18 +28,19 @@ class PaymentListView(ListAPIView):
 class CourseViewSet(ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-    permission_classes = [IsAuthenticated,]
+    permission_classes = [IsUserOrStaff, IsModer]
 
 
 class LessonDetailView(RetrieveAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsUserOrStaff, IsModer]
 
 
 class LessonListView(ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
+    permission_classes = [IsUserOrStaff]
 
 
 class LessonCreateView(CreateAPIView):
@@ -55,9 +56,10 @@ class LessonCreateView(CreateAPIView):
 class LessonUpdateView(UpdateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsUserOrStaff]
+    permission_classes = [IsUserOrStaff, IsModer]
 
 
 class LessonDeleteView(DestroyAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
+    permission_classes = [IsUserOrStaff]
