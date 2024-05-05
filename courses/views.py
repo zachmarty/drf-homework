@@ -28,38 +28,39 @@ class PaymentListView(ListAPIView):
 class CourseViewSet(ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-    permission_classes = [IsUserOrStaff, IsModer]
+    permission_classes = [IsUserOrStaff, IsModer, IsAuthenticated]
 
 
 class LessonDetailView(RetrieveAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsUserOrStaff, IsModer]
+    permission_classes = [IsAuthenticated]
 
 
 class LessonListView(ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsUserOrStaff]
+    permission_classes = [IsAuthenticated]
 
 
 class LessonCreateView(CreateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated]
-    
+
     def perform_create(self, serializer):
         new_lesson = serializer.save()
         new_lesson.user = self.request.user
         new_lesson.save()
 
+
 class LessonUpdateView(UpdateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsUserOrStaff, IsModer]
+    permission_classes = [IsUserOrStaff, IsModer, IsAuthenticated]
 
 
 class LessonDeleteView(DestroyAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsUserOrStaff]
+    permission_classes = [IsUserOrStaff, IsAuthenticated]
