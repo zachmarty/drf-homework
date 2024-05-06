@@ -1,4 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
+from rest_framework.decorators import permission_classes
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import (
     CreateAPIView,
@@ -8,6 +9,7 @@ from rest_framework.generics import (
     UpdateAPIView,
 )
 from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
 from courses.models import Course, Lesson, Payment
@@ -28,7 +30,28 @@ class PaymentListView(ListAPIView):
 class CourseViewSet(ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-    permission_classes = [IsUserOrStaff, IsModer, IsAuthenticated]
+    
+    def get_permissions(self):
+        if self.action == "list":
+            self.permission_classes = [IsAuthenticated]
+        elif self.action == "retrieve":
+            self.permission_classes = [IsAuthenticated]
+        elif self.action == "create":
+            self.permission_classes = [IsAuthenticated]
+        elif self.action == "update":
+            self.permission_classes = [IsUserOrStaff, IsModer, IsAuthenticated]
+        elif self.action == "destroy":
+            self.permission_classes = [IsUserOrStaff, IsAuthenticated]
+        return [permission() for permission in permission_classes]
+    
+    def create(self, request, *args, **kwargs):
+        data = request.data
+        instance = CourseSerializer(data = data)
+        instance.user = self.request.user
+        instance.is_valid(raise_exception=True)
+        instance.save()
+        return Response(instance.data)
+        
 
 
 class LessonDetailView(RetrieveAPIView):
