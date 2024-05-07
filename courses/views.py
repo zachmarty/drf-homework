@@ -37,9 +37,10 @@ class CourseViewSet(ModelViewSet):
         elif self.action == "retrieve":
             self.permission_classes = [IsAuthenticated]
         elif self.action == "create":
-            self.permission_classes = [IsAuthenticated]
+            self.permission_classes = [IsAuthenticated, ~IsModer]#Модер не может создавать
         elif self.action == "update":
-            self.permission_classes = [IsUserOrStaff, IsModer, IsAuthenticated]
+            self.permission_classes = [IsAuthenticated, IsUserOrStaff | IsModer]#Пользователь должен быть зареган + быть владельцем, 
+            #админом или модером
         elif self.action == "destroy":
             self.permission_classes = [IsUserOrStaff, IsAuthenticated]
         return [permission() for permission in permission_classes]
@@ -69,7 +70,7 @@ class LessonListView(ListAPIView):
 class LessonCreateView(CreateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, ~IsModer]
 
     def perform_create(self, serializer):
         new_lesson = serializer.save()
@@ -80,7 +81,7 @@ class LessonCreateView(CreateAPIView):
 class LessonUpdateView(UpdateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsUserOrStaff, IsModer, IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsModer | IsUserOrStaff]
 
 
 class LessonDeleteView(DestroyAPIView):
