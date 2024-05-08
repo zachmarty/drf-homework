@@ -8,7 +8,7 @@ from rest_framework.generics import (
     RetrieveAPIView,
     UpdateAPIView,
 )
-from rest_framework.permissions import IsAuthenticated
+from rest_framework.permissions import IsAuthenticated, AllowAny
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
@@ -41,8 +41,9 @@ class CourseViewSet(ModelViewSet):
             self.permission_classes = [IsAuthenticated]
         elif self.action == "create":
             self.permission_classes = [
-                IsAuthenticated,
-                ~IsModer,
+                # IsAuthenticated,
+                # ~IsModer,
+                AllowAny
             ]  # Модер не может создавать
         elif self.action == "update":
             self.permission_classes = [
@@ -79,7 +80,9 @@ class LessonListView(ListAPIView):
 class LessonCreateView(CreateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
-    permission_classes = [IsAuthenticated, ~IsModer]
+    permission_classes = [
+        #IsAuthenticated, ~IsModer,
+        AllowAny]
 
     def perform_create(self, serializer):
         new_lesson = serializer.save()
@@ -106,7 +109,6 @@ class SubCreateView(RetrieveAPIView):
 
     def post(self, *args, **kwargs):
         user = self.request.user
-        print(self.request.data)
         course_id = self.request.data["course"]
         course = get_object_or_404(Course, id=course_id)
         if Sub.objects.filter(user=user, course=course).exists():
