@@ -39,7 +39,7 @@ class LessonTestCase(APITestCase):
         data = {
             "name":"test",
             "description":"test description",
-
+            "course":1
         }
         response = self.client.put(
             'lesson/create/',
