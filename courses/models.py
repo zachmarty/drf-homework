@@ -1,3 +1,4 @@
+from tabnanny import verbose
 from django.db import models
 from users.models import User
 
@@ -92,3 +93,15 @@ class Payment(models.Model):
 
     def __str__(self) -> str:
         return f"{self.user} {self.payment}"
+
+
+class Sub(models.Model):
+    user = models.ForeignKey(User, on_delete=models.CASCADE, null=True, blank=True)
+    course = models.ForeignKey(Course, on_delete=models.CASCADE, null=True, blank=True)
+
+    class Meta:
+        verbose_name = "Подписка"
+        verbose_name_plural = "Подписки"
+        ordering = [
+            "id",
+        ]

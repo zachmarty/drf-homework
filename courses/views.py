@@ -12,9 +12,11 @@ from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
 
-from courses.models import Course, Lesson, Payment
+from courses.models import Course, Lesson, Payment, Sub
+from courses.paginators import CoursePaginator, LessonPaginator
 from courses.permissions import IsModer, IsUserOrStaff
 from courses.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
+from django.shortcuts import get_object_or_404
 
 
 class PaymentListView(ListAPIView):
@@ -30,29 +32,35 @@ class PaymentListView(ListAPIView):
 class CourseViewSet(ModelViewSet):
     serializer_class = CourseSerializer
     queryset = Course.objects.all()
-    
+    pagination_class = CoursePaginator
+
     def get_permissions(self):
         if self.action == "list":
             self.permission_classes = [IsAuthenticated]
         elif self.action == "retrieve":
             self.permission_classes = [IsAuthenticated]
         elif self.action == "create":
-            self.permission_classes = [IsAuthenticated, ~IsModer]#Модер не может создавать
+            self.permission_classes = [
+                IsAuthenticated,
+                ~IsModer,
+            ]  # Модер не может создавать
         elif self.action == "update":
-            self.permission_classes = [IsAuthenticated, IsUserOrStaff | IsModer]#Пользователь должен быть зареган + быть владельцем, 
-            #админом или модером
+            self.permission_classes = [
+                IsAuthenticated,
+                IsUserOrStaff | IsModer,
+            ]  # Пользователь должен быть зареган + быть владельцем,
+            # админом или модером
         elif self.action == "destroy":
             self.permission_classes = [IsUserOrStaff, IsAuthenticated]
-        return [permission() for permission in permission_classes]
-    
+        return [permission() for permission in self.permission_classes]
+
     def create(self, request, *args, **kwargs):
         data = request.data
-        instance = CourseSerializer(data = data)
+        instance = CourseSerializer(data=data)
         instance.user = self.request.user
         instance.is_valid(raise_exception=True)
         instance.save()
         return Response(instance.data)
-        
 
 
 class LessonDetailView(RetrieveAPIView):
@@ -65,6 +73,7 @@ class LessonListView(ListAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsAuthenticated]
+    pagination_class = LessonPaginator
 
 
 class LessonCreateView(CreateAPIView):
@@ -88,3 +97,23 @@ class LessonDeleteView(DestroyAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [IsUserOrStaff, IsAuthenticated]
+
+
+class SubCreateView(RetrieveAPIView):
+    serializer_class = Sub
+    queryset = Sub.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def post(self, *args, **kwargs):
+        user = self.request.user
+        print(self.request.data)
+        course_id = self.request.data["course"]
+        course = get_object_or_404(Course, id=course_id)
+        if Sub.objects.filter(user=user, course=course).exists():
+            sub = Sub.objects.get(user=user, course=course).delete()
+            message = f"Подписка на курс {course.name} отменена"
+        else:
+            sub = Sub.objects.create(user=user, course=course)
+            sub.save()
+            message = f"Вы подписались на курс {course.name}"
+        return Response({"message": message})

@@ -9,6 +9,7 @@ from courses.views import (
     LessonListView,
     LessonUpdateView,
     PaymentListView,
+    SubCreateView,
 )
 
 
@@ -24,4 +25,5 @@ urlpatterns = [
     path("lesson/<int:pk>/update", LessonUpdateView.as_view(), name="lesson_update"),
     path("lesson/<int:pk>/delete", LessonDeleteView.as_view(), name="lesson_delete"),
     path("payment/", PaymentListView.as_view(), name="payment_list"),
+    path("sub", SubCreateView.as_view(), name="sub"),
 ] + router.urls

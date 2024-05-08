@@ -1,6 +1,6 @@
 from django.contrib import admin
 
-from courses.models import Course, Lesson, Payment
+from courses.models import Course, Lesson, Payment, Sub
 
 
 # Register your models here.
@@ -23,3 +23,10 @@ class PaymentAdmin(admin.ModelAdmin):
     list_display = ("id", "user", "pay_date", "lesson", "course", "payment", "method")
     list_filter = ("id", "pay_date", "user", "payment")
     search_fields = ("id", "pay_date", "user", "payment")
+
+
+@admin.register(Sub)
+class SubAdmin(admin.ModelAdmin):
+    list_display = ("user", "course")
+    list_filter = ("id", "user", "course")
+    search_fields = ("user", "course")
