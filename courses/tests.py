@@ -45,7 +45,6 @@ class LessonTestCase(APITestCase):
             'content_type': 'application/json',
         } 
 
-        request_data.update(headers_to_send)
         request_data['data'] = data
         response = self.client.post(
             'lesson/create',
