@@ -32,7 +32,7 @@ class LessonTestCase(APITestCase):
     def setUp(self) -> None:
         return super().setUp()
     
-    def test_create_course(self):
+    def test_create_lesson(self):
         """
         Создание урока
         """
@@ -41,9 +41,15 @@ class LessonTestCase(APITestCase):
             "description":"test description",
             "course":1
         }
-        response = self.client.put(
-            'lesson/create/',
-            data=data
+        request_data = {
+            'content_type': 'application/json',
+        } 
+
+        request_data.update(headers_to_send)
+        request_data['data'] = data
+        response = self.client.post(
+            'lesson/create',
+            **request_data
         )
 
         print(response.json())
