@@ -41,9 +41,9 @@ class CourseViewSet(ModelViewSet):
             self.permission_classes = [IsAuthenticated]
         elif self.action == "create":
             self.permission_classes = [
-                # IsAuthenticated,
-                # ~IsModer,
-                AllowAny
+                IsAuthenticated,
+                ~IsModer,
+                AllowAny,
             ]  # Модер не может создавать
         elif self.action == "update":
             self.permission_classes = [
@@ -81,8 +81,9 @@ class LessonCreateView(CreateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [
-        #IsAuthenticated, ~IsModer,
-        AllowAny]
+        # IsAuthenticated, ~IsModer,
+        AllowAny
+    ]
 
     def perform_create(self, serializer):
         new_lesson = serializer.save()
