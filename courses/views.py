@@ -43,7 +43,7 @@ class CourseViewSet(ModelViewSet):
             self.permission_classes = [
                 IsAuthenticated,
                 ~IsModer,
-                AllowAny,
+                # AllowAny,
             ]  # Модер не может создавать
         elif self.action == "update":
             self.permission_classes = [

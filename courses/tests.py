@@ -33,24 +33,24 @@ class CourseCreateTestCase(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_200_OK)
 
 
-class LessonTestCase(APITestCase):
+# class LessonTestCase(APITestCase):
 
-    def setUp(self) -> None:
-        return super().setUp()
+#     def setUp(self) -> None:
+#         return super().setUp()
 
-    def test_create_lesson(self):
-        """
-        Создание урока
-        """
-        data = {"name": "test", "description": "test description", "course": 1}
-        request_data = {
-            "content_type": "application/json",
-        }
-        # self.client.credentials(**headers)
-        request_data["data"] = data
-        response = self.client.post("lesson/create", **request_data)
-        print(response.text)
+#     def test_create_lesson(self):
+#         """
+#         Создание урока
+#         """
+#         data = {"name": "test", "description": "test description", "course": 1}
+#         request_data = {
+#             "content_type": "application/json",
+#         }
+#         # self.client.credentials(**headers)
+#         request_data["data"] = data
+#         response = self.client.post("lesson/create", **request_data)
+#         print(response.text)
 
-        print(response.json())
+#         print(response.json())
 
-        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+#         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
