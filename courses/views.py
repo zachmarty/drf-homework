@@ -1,5 +1,7 @@
+import datetime
+from django.http import HttpResponseRedirect
+from rest_framework.reverse import reverse_lazy
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework.decorators import permission_classes
 from rest_framework.filters import OrderingFilter
 from rest_framework.generics import (
     CreateAPIView,
@@ -8,15 +10,18 @@ from rest_framework.generics import (
     RetrieveAPIView,
     UpdateAPIView,
 )
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.permissions import IsAuthenticated
 from rest_framework.response import Response
 from rest_framework.viewsets import ModelViewSet
-
+import stripe
+from config import settings
 from courses.models import Course, Lesson, Payment, Sub
 from courses.paginators import CoursePaginator, LessonPaginator
 from courses.permissions import IsModer, IsUserOrStaff
 from courses.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
 from django.shortcuts import get_object_or_404
+
+stripe.api_key = settings.STRIPE_API_KEY
 
 
 class PaymentListView(ListAPIView):
@@ -83,8 +88,8 @@ class LessonCreateView(CreateAPIView):
     serializer_class = LessonSerializer
     queryset = Lesson.objects.all()
     permission_classes = [
-        # IsAuthenticated, ~IsModer,
-        AllowAny
+        IsAuthenticated,
+        ~IsModer,
     ]
 
     def perform_create(self, serializer):
@@ -122,3 +127,100 @@ class SubCreateView(RetrieveAPIView):
             sub.save()
             message = f"Вы подписались на курс {course.name}"
         return Response({"message": message})
+
+
+class PaymentCreateView(CreateAPIView):
+    serializer_class = PaymentSerializer
+    queryset = Payment.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def perform_create(self, serializer):
+        new_payment = serializer.save()
+        new_payment.user = self.request.user
+        type = "course" in self.request.get_full_path()
+        if type:
+            pay_course = Course.objects.get(id=self.kwargs["pk"])
+            new_payment.course = pay_course
+            price = len(list(Lesson.objects.filter(course=pay_course))) * 1000 * 100
+            new_payment.payment = price / 100
+            prod = stripe.Product.create(
+                name=pay_course.name, description=pay_course.description
+            )
+            price = stripe.Price.create(
+                currency="rub",
+                unit_amount=price,
+                product=prod["id"],
+            )
+            session = stripe.checkout.Session.create(
+                line_items=[
+                    {
+                        "price": price["id"],
+                        "quantity": 1,
+                    }
+                ],
+                mode="payment",
+                success_url=reverse_lazy(
+                    "courses:payment_detail",
+                    kwargs={"pk": new_payment.id},
+                    request=self.request,
+                ),
+            )
+            new_payment.payment_url = session["url"]
+            new_payment.session_id = session["id"]
+            new_payment.pay_date = datetime.datetime.now()
+            new_payment.save()
+            return HttpResponseRedirect(redirect_to=session["url"])
+
+        else:
+            pay_lesson = Lesson.objects.get(id=self.kwargs["pk"])
+            new_payment.lesson = pay_lesson
+            price = 100000
+            new_payment.payment = price / 100
+            prod = stripe.Product.create(
+                name=pay_lesson.name, description=pay_lesson.description
+            )
+            price = stripe.Price.create(
+                currency="rub",
+                unit_amount=price,
+                product=prod["id"],
+            )
+            session = stripe.checkout.Session.create(
+                line_items=[
+                    {
+                        "price": price["id"],
+                        "quantity": 1,
+                    }
+                ],
+                mode="payment",
+                success_url=reverse_lazy(
+                    "courses:payment_detail",
+                    kwargs={"pk": new_payment.id},
+                    request=self.request,
+                ),
+            )
+            new_payment.payment_url = session["url"]
+            new_payment.session_id = session["id"]
+            new_payment.pay_date = datetime.datetime.now()
+            new_payment.save()
+            return HttpResponseRedirect(redirect_to=session["url"])
+
+
+class PaymentRetrieveView(RetrieveAPIView):
+    serializer_class = PaymentSerializer
+    queryset = Payment.objects.all()
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, *args, **kwargs):
+        payment = self.get_object()
+        session = stripe.checkout.Session.retrieve(
+            payment.session_id
+        )
+        if session.status == "complete":
+            return Response({
+                'message':'Оплата прошла успешно'
+            })
+        else:
+            return Response({
+                'message':'Оплата не получена',
+                'pay_url':session.url
+            })
