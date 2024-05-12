@@ -208,7 +208,7 @@ class PaymentCreateView(CreateAPIView):
 class PaymentRetrieveView(RetrieveAPIView):
     serializer_class = PaymentSerializer
     queryset = Payment.objects.all()
-    permission_classes = [IsAuthenticated]
+    permission_classes = [IsAuthenticated, IsUserOrStaff]
 
     def get(self, request, *args, **kwargs):
         payment = self.get_object()
