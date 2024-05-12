@@ -43,7 +43,6 @@ class CourseViewSet(ModelViewSet):
             self.permission_classes = [
                 IsAuthenticated,
                 ~IsModer,
-                # AllowAny,
             ]  # Модер не может создавать
         elif self.action == "update":
             self.permission_classes = [
@@ -52,15 +51,18 @@ class CourseViewSet(ModelViewSet):
             ]  # Пользователь должен быть зареган + быть владельцем,
             # админом или модером
         elif self.action == "destroy":
-            self.permission_classes = [IsUserOrStaff, IsAuthenticated]
+            self.permission_classes = [
+                IsUserOrStaff,
+                IsAuthenticated,
+            ]
         return [permission() for permission in self.permission_classes]
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        instance = CourseSerializer(data=data)
-        instance.user = self.request.user
-        instance.is_valid(raise_exception=True)
-        instance.save()
+        new_course = Course.objects.create(**data, user=self.request.user)
+        new_course.save()
+        instance = CourseSerializer(new_course)
+
         return Response(instance.data)
 
 

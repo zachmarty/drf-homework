@@ -52,7 +52,7 @@ class Lesson(models.Model):
         ]
 
     def __str__(self) -> str:
-        return f"{self.name} {self.course}"
+        return f"{self.name}"
 
 
 class Payment(models.Model):
