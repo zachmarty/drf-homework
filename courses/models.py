@@ -5,6 +5,11 @@ from users.models import User
 
 class Course(models.Model):
     name = models.CharField(max_length=100, verbose_name="Название")
+    last_update = models.DateTimeField(
+        verbose_name="Последнее обновление",
+        blank=True,
+        null=True,
+    )
     preview = models.ImageField(verbose_name="Картинка", blank=True, null=True)
     description = models.TextField(
         max_length=500, blank=True, null=True, verbose_name="Описание"
@@ -85,7 +90,9 @@ class Payment(models.Model):
     payment_url = models.URLField(
         verbose_name="Ссылка на оплату", blank=True, null=True, max_length=500
     )
-    session_id = models.CharField(max_length=100, blank=True, null=True, verbose_name="Айди ссессии")
+    session_id = models.CharField(
+        max_length=100, blank=True, null=True, verbose_name="Айди ссессии"
+    )
 
     class Meta:
         verbose_name = "Платеж"

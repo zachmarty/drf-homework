@@ -22,6 +22,8 @@ from courses.permissions import IsModer, IsUserOrStaff
 from courses.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
 from django.shortcuts import get_object_or_404
 
+from courses.tasks import check_updates
+
 stripe.api_key = settings.STRIPE_API_KEY
 
 
@@ -65,11 +67,22 @@ class CourseViewSet(ModelViewSet):
 
     def create(self, request, *args, **kwargs):
         data = request.data
-        new_course = Course.objects.create(**data, user=self.request.user)
+        new_course = Course.objects.create(**data, user=self.request.user, last_update = datetime.datetime.now())
         new_course.save()
         instance = CourseSerializer(new_course)
 
         return Response(instance.data)
+    
+    def update(self, request, *args, **kwargs):
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        date = instance.last_update
+        instance.last_update = datetime.datetime.now()
+        serializer = self.get_serializer(instance, data=request.data, partial=partial)
+        serializer.is_valid(raise_exception=True)
+        self.perform_update(serializer)
+        check_updates.delay(instance.id, date)
+        return Response(serializer.data)
 
 
 class LessonDetailView(RetrieveAPIView):
