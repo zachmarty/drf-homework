@@ -17,6 +17,7 @@ import stripe
 from config import settings
 from courses.models import Course, Lesson, Payment, Sub
 from courses.paginators import CoursePaginator, LessonPaginator
+from courses.payment_modules import create_payment_price, create_payment_product, create_payment_session, get_session_info
 from courses.permissions import IsModer, IsUserOrStaff
 from courses.serializers import CourseSerializer, LessonSerializer, PaymentSerializer
 from django.shortcuts import get_object_or_404
@@ -141,30 +142,11 @@ class PaymentCreateView(CreateAPIView):
         if type:
             pay_course = Course.objects.get(id=self.kwargs["pk"])
             new_payment.course = pay_course
-            price = len(list(Lesson.objects.filter(course=pay_course))) * 1000 * 100
-            new_payment.payment = price / 100
-            prod = stripe.Product.create(
-                name=pay_course.name, description=pay_course.description
-            )
-            price = stripe.Price.create(
-                currency="rub",
-                unit_amount=price,
-                product=prod["id"],
-            )
-            session = stripe.checkout.Session.create(
-                line_items=[
-                    {
-                        "price": price["id"],
-                        "quantity": 1,
-                    }
-                ],
-                mode="payment",
-                success_url=reverse_lazy(
-                    "courses:payment_detail",
-                    kwargs={"pk": new_payment.id},
-                    request=self.request,
-                ),
-            )
+            amount = len(list(Lesson.objects.filter(course=pay_course))) * 1000
+            new_payment.payment = amount
+            prod = create_payment_product(pay_course.name, pay_course.description)
+            price = create_payment_price(amount, prod["id"])
+            session = create_payment_session(price["id"], new_payment.id, self.request)
             new_payment.payment_url = session["url"]
             new_payment.session_id = session["id"]
             new_payment.pay_date = datetime.datetime.now()
@@ -174,30 +156,10 @@ class PaymentCreateView(CreateAPIView):
         else:
             pay_lesson = Lesson.objects.get(id=self.kwargs["pk"])
             new_payment.lesson = pay_lesson
-            price = 100000
-            new_payment.payment = price / 100
-            prod = stripe.Product.create(
-                name=pay_lesson.name, description=pay_lesson.description
-            )
-            price = stripe.Price.create(
-                currency="rub",
-                unit_amount=price,
-                product=prod["id"],
-            )
-            session = stripe.checkout.Session.create(
-                line_items=[
-                    {
-                        "price": price["id"],
-                        "quantity": 1,
-                    }
-                ],
-                mode="payment",
-                success_url=reverse_lazy(
-                    "courses:payment_detail",
-                    kwargs={"pk": new_payment.id},
-                    request=self.request,
-                ),
-            )
+            new_payment.payment = 1000
+            prod = create_payment_product(pay_lesson.name, pay_lesson.description)
+            price = create_payment_price(new_payment.payment, prod['id'])
+            session = create_payment_session(price["id"], new_payment.id, self.request)
             new_payment.payment_url = session["url"]
             new_payment.session_id = session["id"]
             new_payment.pay_date = datetime.datetime.now()
@@ -212,9 +174,7 @@ class PaymentRetrieveView(RetrieveAPIView):
 
     def get(self, request, *args, **kwargs):
         payment = self.get_object()
-        session = stripe.checkout.Session.retrieve(
-            payment.session_id
-        )
+        session = get_session_info(payment.session_id)
         if session.status == "complete":
             return Response({
                 'message':'Оплата прошла успешно'
