@@ -1,6 +1,6 @@
 import datetime
 from celery import shared_task
-from config import settings
+from django.conf import settings
 from courses.models import Course, Sub
 from django.core.mail import send_mail
 
@@ -17,6 +17,7 @@ def check_updates(pk : int, date : datetime.datetime):
                 subscribers = []
                 for sub in subs:
                     subscribers.append(User.objects.get(id = sub.user.id).email)
+                print(settings.EMAIL_HOST_USER)
                 response = send_mail(
                     subject=f'Курс {instance.name} обновился!!!',
                     message= f'Курс {instance.name} получил обновления, посмотрите, что там!!!',
@@ -24,6 +25,6 @@ def check_updates(pk : int, date : datetime.datetime):
                     recipient_list = subscribers,
                     fail_silently=False
                 )
-                print(response)
+                print(subscribers)
         
         
