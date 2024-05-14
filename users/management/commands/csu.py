@@ -6,6 +6,11 @@ from users.models import User
 class Command(BaseCommand):
 
     def handle(self, *args: Any, **options: Any) -> str | None:
+        try:
+            admin = User.objects.get(email="admin@mail.ru")
+            admin.delete()
+        except:
+            pass
         admin = User.objects.create(
             email="admin@mail.ru",
             first_name="admin",
