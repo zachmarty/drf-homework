@@ -33,9 +33,6 @@ def check_login():
     users = User.objects.filter(is_active=True)
     if users.exists():
         for user in users:
-            print("go")
-            print(user.last_login)
-            print(datetime.datetime.now(pytz.timezone("Europe/Moscow")))
             if datetime.datetime.now(
                 pytz.timezone("Europe/Moscow")
             ) - user.last_login > datetime.timedelta(weeks=4):
