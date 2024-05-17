@@ -172,6 +172,6 @@ EMAIL_USE_SSL = os.getenv("EMAIL_USE_SSL") == "True"
 CELERY_BEAT_SCHEDULE = {
     "check_login": {
         "task": "courses.tasks.check_login",
-        "schedule": crontab(minute="*/1"),
+        "schedule": crontab(minute="*/1440"),
     }
 }
