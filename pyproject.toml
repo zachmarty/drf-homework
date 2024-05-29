@@ -11,7 +11,6 @@ django = "^5.0.4"
 djangorestframework = "^3.15.1"
 pylint = "^3.1.0"
 isort = "^5.13.2"
-psycopg2 = "^2.9.9"
 pylint-django = "^2.5.5"
 django-stubs = "^4.2.7"
 pylance = "^0.10.13"
@@ -28,6 +27,7 @@ celery = "^5.4.0"
 redis = "^5.0.4"
 eventlet = "^0.36.1"
 django-celery-beat = "^2.6.0"
+psycopg2-binary = "^2.9.9"
 
 
 [build-system]
